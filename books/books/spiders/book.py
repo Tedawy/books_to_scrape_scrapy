@@ -1,29 +1,51 @@
 from typing import Iterable
 import scrapy
-#from scrapy.http import Request
+from books.items import BooksItemInfo
+
+# from scrapy.http import Request
 
 
 class BookSpider(scrapy.Spider):
     name = "book"
-    
+
     def start_requests(self):
-        URL = 'https://books.toscrape.com'
-        yield scrapy.Request(url= URL , callback= self.parse)
+        URL = "https://books.toscrape.com"
+        yield scrapy.Request(url=URL, callback=self.parse)
 
     def parse(self, response):
-            for article in response.css("article.product_pod"):
-                yield{
-                    'title' : article.css("h3 > a::attr(title)").get(),
-                    'price' : article.css('.price_color::text').extract_first(),
-                    'rating' : article.css('p.star-rating::attr(class)').re_first('star-rating (.*)')
+        books = response.css("article.product_pod")
+        for book in books:
+            book_page = book.css("h3 a::attr(href)").get()
+            if book_page:
+                yield response.follow(book_page, callback=self.parse_book_apge)
 
-                }
-                
-            next_page = response.css('li.next a::attr(href)').get()
-            if next_page:
-                yield response.follow(next_page, callback=self.parse)
-            'book_img': article.css("img::attr(src)").get()
+    
+        next_page = response.css("li.next a::attr(href)").get()
+        if next_page:
+            yield response.follow(next_page, callback=self.parse)
+    
 
-            
-        
+    def parse_book_apge(self, response):
+        book_info = BooksItemInfo()
+        table_info = response.css("table tr")
 
+        # Book Info
+        book_info["title"] = response.css(".product_main h1::text").get()
+        book_info["category"] = response.xpath(
+            "//ul[@class='breadcrumb']/li[@class='active']/preceding-sibling::li[1]/a/text()"
+        ).get()
+        book_info["price"] = response.css("p.price_color ::text").get()
+        """
+        book_info["product_description"] = response.xpath(
+            "//div[@id='product_description']/following-sibling::p/text()"
+        ).get()
+        """
+        book_info["product_type"] = table_info[1].css("td ::text").get()
+        book_info["price_excl_tax"] = table_info[2].css("td ::text").get()
+        book_info["price_incl_tax"] = table_info[3].css("td ::text").get()
+        book_info["tax"] = table_info[4].css("td ::text").get()
+        book_info["availability"] = table_info[5].css("td ::text").get()
+        book_info["number_of_reviews"] = table_info[6].css("td ::text").get()
+        book_info["stars"] = response.css("p.star-rating").attrib["class"]
+
+        yield book_info
