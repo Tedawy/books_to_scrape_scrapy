@@ -41,9 +41,9 @@ class SaveDataToPostgres:
         try:
             self.conn = psycopg2.connect(
                 database="web-scraping",
-                user="dev",
+                user="user",
                 host="localhost",
-                password="totti",
+                password="password",
                 port=5432,
             )
             # create cursor, used to execute commands
