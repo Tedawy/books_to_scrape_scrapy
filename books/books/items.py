@@ -5,13 +5,6 @@
 
 import scrapy
 
-
-class BooksItem(scrapy.Item):
-    # define the fields for your item here like:
-    name = scrapy.Field()
-    pass
-
-
 class BooksItemInfo(scrapy.Item):
     
     title = scrapy.Field()
@@ -25,3 +18,6 @@ class BooksItemInfo(scrapy.Item):
     availability = scrapy.Field()
     number_of_reviews = scrapy.Field()
     stars = scrapy.Field()
+    
+    images = scrapy.Field()
+    image_urls = scrapy.Field()

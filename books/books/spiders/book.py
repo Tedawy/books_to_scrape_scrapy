@@ -18,12 +18,11 @@ class BookSpider(scrapy.Spider):
             book_page = book.css("h3 a::attr(href)").get()
             if book_page:
                 yield response.follow(book_page, callback=self.parse_book_apge)
-
-    
+        
         next_page = response.css("li.next a::attr(href)").get()
         if next_page:
             yield response.follow(next_page, callback=self.parse)
-    
+        
 
     def parse_book_apge(self, response):
         book_info = BooksItemInfo()
@@ -47,5 +46,10 @@ class BookSpider(scrapy.Spider):
         book_info["availability"] = table_info[5].css("td ::text").get()
         book_info["number_of_reviews"] = table_info[6].css("td ::text").get()
         book_info["stars"] = response.css("p.star-rating").attrib["class"]
+
+        # Books images
+        book_info["image_urls"] = [
+            response.urljoin(response.css(".active img::attr(src)").get())
+        ]
 
         yield book_info

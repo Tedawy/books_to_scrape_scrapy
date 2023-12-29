@@ -8,13 +8,12 @@
 from itemadapter import ItemAdapter
 import re
 import psycopg2
+from scrapy.pipelines.images import ImagesPipeline
 
 
 class BooksPipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
-
-        # field_names = adapter.field_names()
 
         # Remove £ from all columns
         price_keys = ["price", "price_excl_tax", "price_incl_tax", "tax"]
@@ -36,8 +35,6 @@ class BooksPipeline:
 
         return item
 
-
-# ... (previous imports)
 
 class SaveDataToPostgres:
     def __init__(self) -> None:
@@ -120,3 +117,5 @@ class SaveDataToPostgres:
             self.conn.close()
         except Exception as e:
             print(f"Error closing database connection: {e}")
+
+
